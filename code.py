@@ -16,7 +16,8 @@ TEST_NEOPIXEL    = False
 TEST_AUDIO       = False
 TEST_RTC         = False
 TEST_I2C0        = False
-TEST_I2C_5V_LCD  = True
+TEST_I2C_5V_LCD  = False
+TEST_SD_CARD     = True
 
 #*********************************************************************************
 #  UART0 and UART1 Tests    
@@ -231,3 +232,31 @@ if TEST_I2C_5V_LCD:
         lcd.backlight = False
         time.sleep(2)
 
+
+if TEST_SD_CARD:
+    import busio
+    import digitalio
+    import adafruit_sdcard
+    import storage
+    
+    spi = busio.SPI(IO.SPIO0_SCK, MOSI=IO.SPIO0_MOSI, MISO=IO.SPIO0_MISO)
+    cs = digitalio.DigitalInOut(IO.SPIO0_CS)
+    sdcard = adafruit_sdcard.SDCard(spi, cs)
+    vfs = storage.VfsFat(sdcard)
+
+    print("TinyPico Test SD Card: Write & Read")
+
+    storage.mount(vfs, "/sd")
+    print("Write 3 Lines")
+    with open("/sd/test.txt", "w") as f:
+        f.write("Hello world!\r\n")
+        f.write("Row 2\r\n")
+        f.write("Rivi 3\r\n")
+        
+    print("Read all Lines")
+    with open("/sd/test.txt", "r") as f:
+        line = f.readline()
+        while line != '':
+            print(line)
+            line = f.readline()
+        
